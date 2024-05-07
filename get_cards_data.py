@@ -11,29 +11,12 @@ TEMP_FOLDER = "temp"
 import requests
 from typing import Dict, List
 from os.path import join
-from utils import dump_json, create_folder_if_not_exists
+from utils import dump_json, create_folder_if_not_exists, LANGUAGE_HEADERS
 
 # Constants
 CARDS_URL = "https://api.altered.gg/cards"
 PARAMS = {
     "itemsPerPage": 10000
-}
-LANGUAGE_HEADERS = {
-    "en": {
-        "Accept-Language": "en-en"
-    },
-    "fr": {
-        "Accept-Language": "fr-fr"
-    },
-    "es": {
-        "Accept-Language": "es-es"
-    },
-    "it": {
-        "Accept-Language": "it-it"
-    },
-    "de": {
-        "Accept-Language": "de-de"
-    }
 }
 
 def get_cards_data(language):

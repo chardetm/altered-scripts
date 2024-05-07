@@ -1,6 +1,24 @@
 # Script by Maverick CHARDET
 # CC-BY
 
+LANGUAGE_HEADERS = {
+    "en": {
+        "Accept-Language": "en-en"
+    },
+    "fr": {
+        "Accept-Language": "fr-fr"
+    },
+    "es": {
+        "Accept-Language": "es-es"
+    },
+    "it": {
+        "Accept-Language": "it-it"
+    },
+    "de": {
+        "Accept-Language": "de-de"
+    }
+}
+
 # Imports
 import requests
 import os
