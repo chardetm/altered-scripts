@@ -2,7 +2,7 @@
 
 **By:** Maverick Chardet
 
-**Licence:** CC-BY
+**License:** CC-BY
 
 **Contact:** `maverick_fr` on Discord
 
