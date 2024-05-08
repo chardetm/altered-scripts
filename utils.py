@@ -28,12 +28,13 @@ def create_folder_if_not_exists(folder):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-def download_file(url, filename, log=False):
+def download_file(url, filename, log=False, headers=None):
     if log: print(f"Downloading {filename} from {url}")
+    response = requests.get(url, stream=True, headers=headers)
+    if not response.ok:
+        print(response)
+        return
     with open(filename, 'wb') as handle:
-        response = requests.get(url, stream=True)
-        if not response.ok:
-            print(response)
         for block in response.iter_content(1024):
             if not block:
                 break
