@@ -1,5 +1,5 @@
 # Script by Maverick CHARDET
-# CC-BY
+# MIT License
 
 # Parameters
 LANGUAGES = ["en", "fr", "es", "it", "de"]
