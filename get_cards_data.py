@@ -95,7 +95,7 @@ def merge_cards_data(data: Dict[str, List[Dict[str, any]]]):
                     card["elements"][property][language] = current_card_lang["elements"][property]
                 else:
                     value = current_card_lang["elements"][property]
-                    if "COST" in property or "POWER" in property:
+                    if "COST" in property or "POWER" in property or property in ["PERMANENT", "RESERVE"]:
                         value = int(value) if value != "" else None
                     add_property_or_ensure_identical(card["elements"], property, value)
         all_cards[card_id] = card
