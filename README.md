@@ -15,9 +15,9 @@ Altered API
 Altered wbesite using the results from `get_cards_data.py`
 - `utils.py`: Utility functions used by the other scripts
 
-## Getting card data
+## Getting cards data
 
-To get the card data, run the following command:
+To get the cards data, run the following command:
 
 ```bash
 python get_cards_data.py
@@ -59,3 +59,31 @@ card image names by changing the `USE_COLLECTOR_NUMBERS` variable. You may also
 choose whether to download the card images and/or the card assets by changing
 the `DOWNLOAD_CARD_IMAGES` and `DOWNLOAD_ASSETS` variables. You may also force
 redownloading the images by changing the `FORCE_REDOWNLOAD` variable.
+
+## Getting cards data as CSV
+
+**Note:** This script requires the results from `get_cards_data.py`. Make sure
+to run `get_cards_data.py` first.
+
+To get the cards data as a CSV file, run the following command:
+
+```bash
+python get_csv_data.py
+```
+
+By default, the script will write the CSV file in the `results`
+directory, with the name `cards_XX.csv` where `XX` is the main language code.
+
+### Parameters
+
+It is possible to change some parameters at the beginning of the script. In
+particular, you can list only the languages you are interested in by changing
+the `NAME_LANGUAGES` and `ABILITIES_LANGUAGES` variables. You may also choose
+the language to use for the types, subtypes, and rarities by changing the
+`MAIN_LANGUAGE` variable. It is also possible to choose whether to group the
+subtypes in a single column or to have one column per subtype by changing the
+`GROUP_SUBTYPES` variable (defaults to `False`).
+
+Note that if the subtypes are not grouped, the subtypes will span over
+multiple columns. The column for each subtype is decided so that any one
+subtype may appear in only one column. 
