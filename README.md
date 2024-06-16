@@ -9,10 +9,13 @@
 ## Files
 
 - `README.md`: This file
+- `LICENSE.txt`: License file
 - `get_cards_data.py`: Script to download the cards data using the official
 Altered API
 - `get_card_images.py`: Script to download the card images from the official
 Altered wbesite using the results from `get_cards_data.py`
+- `get_csv_data.py`: Script to generate a CSV file from the results of
+`get_cards_data.py`
 - `utils.py`: Utility functions used by the other scripts
 
 ## Getting cards data
