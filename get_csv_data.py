@@ -50,7 +50,7 @@ def main():
     for card in data.values():
         card_id = card["id"]
         card_dict = {
-            "collectorNumber": card["collectorNumberFormatted"],
+            "collectorNumber": card["collectorNumberFormatted"][MAIN_LANGUAGE],
             "id": card_id,
             "type": types[card["type"]][MAIN_LANGUAGE],
             "faction": factions[card["mainFaction"]][MAIN_LANGUAGE],

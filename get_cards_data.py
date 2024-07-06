@@ -80,9 +80,9 @@ def merge_cards_data(data: Dict[str, List[Dict[str, any]]]):
                 print(f"Card {card_id} not found in {language}")
                 continue
             current_card_lang = cards_lang_dict[language][card_id]
-            for property in ["id", "type", "subtypes", "assets", "mainFaction", "rarity", "collectorNumberFormatted"]:
+            for property in ["id", "type", "subtypes", "assets", "mainFaction", "rarity"]:
                 add_property_or_ensure_identical(card, property, current_card_lang[property])
-            for property in ["name", "imagePath"]:
+            for property in ["name", "imagePath", "collectorNumberFormatted"]:
                 if property not in card:
                     card[property] = {}
                 card[property][language] = current_card_lang[property]
