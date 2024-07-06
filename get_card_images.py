@@ -42,7 +42,7 @@ def main():
                 create_folder_if_not_exists(f"{CARD_IMAGES_FOLDER}/{language}")
                 path = f"{CARD_IMAGES_FOLDER}/{language}/{card_id}.jpg"
                 if USE_COLLECTOR_NUMBERS:
-                    number = card["collectorNumberFormatted"]
+                    number = card["collectorNumberFormatted"][language]
                     path = f"{CARD_IMAGES_FOLDER}/{language}/{number}.jpg"
                 if FORCE_REDOWNLOAD or not os.path.exists(path):
                     download_file(card["imagePath"][language], path)
