@@ -6,6 +6,7 @@ LANGUAGES = ["en", "fr", "es", "it", "de"]
 DUMP_TEMP_FILES = False
 OUTPUT_FOLDER = "results"
 TEMP_FOLDER = "temp"
+SKIP_PROMO_CARDS = False
 
 # Imports
 import requests
@@ -32,7 +33,7 @@ def treat_cards_data(data):
     factions = {}
     rarities = {}
     for card in data["hydra:member"]:
-        if card["reference"].startswith("ALT_CORE_P_"):
+        if SKIP_PROMO_CARDS and card["reference"].startswith("ALT_CORE_P_"):
             print(f"Skipping promo card {card['reference']}")
             continue # Promo card with missing stats
         cards.append({
