@@ -6,7 +6,11 @@ LANGUAGES = ["en", "fr", "es", "it", "de"]
 DUMP_TEMP_FILES = False
 OUTPUT_FOLDER = "results"
 TEMP_FOLDER = "temp"
-SKIP_PROMO_CARDS = False
+INCLUDE_PROMO_CARDS = True
+INCLUDE_UNIQUES = True
+INCLUDE_KS = True
+FORCE_INCLUDE_KS_UNIQUES = True # only relevant if INCLUDE_KS = False and INCLUDE_UNIQUES = True
+INCLUDE_FOILERS = False
 
 # Imports
 import requests
@@ -15,13 +19,13 @@ from os.path import join
 from utils import dump_json, create_folder_if_not_exists, LANGUAGE_HEADERS
 
 # Constants
-CARDS_URL = "https://api.altered.gg/cards"
-PARAMS = {
-    "itemsPerPage": 10000
-}
+RARITY_PARAMS = "rarity[]=UNIQUE&rarity[]=COMMON&rarity[]=RARE"
+if not INCLUDE_UNIQUES:
+    RARITY_PARAMS = "rarity[]=COMMON&rarity[]=RARE"
+CARDS_URL = f"https://api.altered.gg/cards?{RARITY_PARAMS}&itemsPerPage=10000"
 
 def get_cards_data(language):
-    response = requests.get(CARDS_URL, params=PARAMS, headers=LANGUAGE_HEADERS[language])
+    response = requests.get(CARDS_URL, headers=LANGUAGE_HEADERS[language])
     if not response.ok:
         print(response)
     return response.json()
@@ -33,8 +37,13 @@ def treat_cards_data(data):
     factions = {}
     rarities = {}
     for card in data["hydra:member"]:
-        if SKIP_PROMO_CARDS and card["reference"].startswith("ALT_CORE_P_"):
-            print(f"Skipping promo card {card['reference']}")
+        if not INCLUDE_FOILERS and "_FOILER_" in card["reference"]:
+            continue
+        if not INCLUDE_KS and "_COREKS_" in card["reference"]:
+            if not INCLUDE_UNIQUES or not FORCE_INCLUDE_KS_UNIQUES or "_U_" not in card["reference"]:
+                continue
+        if not INCLUDE_PROMO_CARDS and card["reference"].startswith("ALT_CORE_P_"):
+            # print(f"Skipping promo card {card['reference']}")
             continue # Promo card with missing stats
         cards.append({
             "id": card["reference"],

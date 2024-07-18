@@ -5,8 +5,8 @@
 LANGUAGES = ["en", "fr", "es", "it", "de"]
 FORCE_REDOWNLOAD = False
 DOWNLOAD_CARD_IMAGES = True
-DOWNLOAD_ASSETS = True
-USE_COLLECTOR_NUMBERS = True
+DOWNLOAD_ASSETS = False
+USE_COLLECTOR_NUMBERS = False
 CARDS_DATA_PATH = "results/cards.json"
 CARD_IMAGES_FOLDER = "card_images"
 CARD_ASSETS_FOLDER = "card_assets"
@@ -43,9 +43,13 @@ def main():
                 path = f"{CARD_IMAGES_FOLDER}/{language}/{card_id}.jpg"
                 if USE_COLLECTOR_NUMBERS:
                     number = card["collectorNumberFormatted"][language]
+                    if "_COREKS_" in card["id"]:
+                        number = number.replace("BTG", "BTGKS")
                     path = f"{CARD_IMAGES_FOLDER}/{language}/{number}.jpg"
                 if FORCE_REDOWNLOAD or not os.path.exists(path):
-                    download_file(card["imagePath"][language], path)
+                    result = download_file(card["imagePath"][language], path)
+                    if not result:
+                        print(f"Error downloading {card_id} ({language})")
 
         if "assets" in card and DOWNLOAD_ASSETS:
             for asset_type in card["assets"]:

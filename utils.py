@@ -33,12 +33,13 @@ def download_file(url, filename, log=False, headers=None):
     response = requests.get(url, stream=True, headers=headers)
     if not response.ok:
         print(response)
-        return
+        return False
     with open(filename, 'wb') as handle:
         for block in response.iter_content(1024):
             if not block:
                 break
             handle.write(block)
+    return True
 
 def dump_json(data, filename):
     with open(filename, 'w', encoding="utf8") as f:

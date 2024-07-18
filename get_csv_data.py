@@ -6,6 +6,8 @@ NAME_LANGUAGES = ["en", "fr"]
 ABILITIES_LANGUAGES = ["en", "fr"]
 MAIN_LANGUAGE = "en"
 GROUP_SUBTYPES = False
+INCLUDE_WEB_ASSETS = False
+
 CARDS_DATA_PATH = "results/cards.json"
 FACTIONS_DATA_PATH = "results/factions.json"
 TYPES_DATA_PATH = "results/types.json"
@@ -85,7 +87,17 @@ def main():
                     card_dict["supportAbility" + "_" + language] = card["elements"]["ECHO_EFFECT"][language]
         for language in NAME_LANGUAGES:
             card_dict["name" + "_" + language] = card["name"][language]
-
+        if INCLUDE_WEB_ASSETS:
+            card_dict["webAsset0"] = None
+            card_dict["webAsset1"] = None
+            card_dict["webAsset2"] = None
+            if "WEB" in card["assets"]:
+                if len(card["assets"]["WEB"]) > 0:
+                    card_dict["webAsset0"] = card["assets"]["WEB"][0]
+                if len(card["assets"]["WEB"]) > 1:
+                    card_dict["webAsset1"] = card["assets"]["WEB"][1]
+                if len(card["assets"]["WEB"]) > 2:
+                    card_dict["webAsset2"] = card["assets"]["WEB"][2]
         cards_dicts.append(card_dict)
     
     fieldnames = ["collectorNumber"]
@@ -101,6 +113,8 @@ def main():
     for language in ABILITIES_LANGUAGES:
         fieldnames += ["abilities_" + language, "supportAbility_" + language]
     fieldnames += ["id", "imagePath"]
+    if INCLUDE_WEB_ASSETS:
+        fieldnames += ["webAsset0", "webAsset1", "webAsset2"]
     
     with open(CSV_OUTPUT_PATH, 'w', newline='', encoding="utf8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
