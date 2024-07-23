@@ -19,16 +19,38 @@ from os.path import join
 from utils import dump_json, create_folder_if_not_exists, LANGUAGE_HEADERS
 
 # Constants
+ITEMS_PER_PAGE = 1000
 RARITY_PARAMS = "rarity[]=UNIQUE&rarity[]=COMMON&rarity[]=RARE"
 if not INCLUDE_UNIQUES:
     RARITY_PARAMS = "rarity[]=COMMON&rarity[]=RARE"
-CARDS_URL = f"https://api.altered.gg/cards?{RARITY_PARAMS}&itemsPerPage=10000"
+CARDS_URL = f"https://api.altered.gg/cards?{RARITY_PARAMS}&itemsPerPage={ITEMS_PER_PAGE}"
 
-def get_cards_data(language):
-    response = requests.get(CARDS_URL, headers=LANGUAGE_HEADERS[language])
+def get_cards_page(language, page):
+    response = requests.get(CARDS_URL + f"&page={page}", headers=LANGUAGE_HEADERS[language])
     if not response.ok:
         print(response)
-    return response.json()
+        return None, None
+    data = response.json()
+    return data["hydra:member"], int(data["hydra:totalItems"])
+
+def get_cards_data(language):
+    print("  page 1")
+    data, page1_total = get_cards_page(language, 1)
+    if data is None:
+        return None
+    nb_pages = (page1_total - 1)//ITEMS_PER_PAGE + 1
+    for i in range(2, nb_pages+1):
+        print(f"  page {i}/{nb_pages}")
+        page_data, page_total = get_cards_page(language, i)
+        if page_total != page1_total:
+            print("Restarting because the total number of cards changed")
+            return get_cards_data(language)
+        data += page_data
+    
+    if len(data) != page1_total:
+        raise Exception(f"Error: total ({page1_total}) is different compared to number of cards ({len(data)})")
+    
+    return data
 
 def treat_cards_data(data):
     cards = []
@@ -36,7 +58,7 @@ def treat_cards_data(data):
     subtypes = {}
     factions = {}
     rarities = {}
-    for card in data["hydra:member"]:
+    for card in data:
         if not INCLUDE_FOILERS and "_FOILER_" in card["reference"]:
             continue
         if not INCLUDE_KS and "_COREKS_" in card["reference"]:
@@ -105,7 +127,9 @@ def merge_cards_data(data: Dict[str, List[Dict[str, any]]]):
                     card["elements"][property][language] = current_card_lang["elements"][property]
                 else:
                     value = current_card_lang["elements"][property]
-                    if "COST" in property or "POWER" in property or property in ["PERMANENT", "RESERVE"]:
+                    if "COST" in property or "POWER" in property:
+                        value = value if value != "" else None
+                    if property in ["PERMANENT", "RESERVE"]:
                         value = int(value) if value != "" else None
                     add_property_or_ensure_identical(card["elements"], property, value)
         all_cards[card_id] = card

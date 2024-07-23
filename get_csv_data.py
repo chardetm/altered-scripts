@@ -123,10 +123,11 @@ def main():
             writer.writerow(card_dict)
 
 def custom_sort(card):
-    noRarity = card["collectorNumber"][:-1]
-    rarity = card["collectorNumber"][-1]
+    beforeRarity = card["collectorNumber"][:-4]
+    afterRarity = card["collectorNumber"][-3:]
+    rarity = card["collectorNumber"][-4]
     fixedRarity = rarity if rarity != "R" else "D"
-    return noRarity + fixedRarity
+    return beforeRarity + fixedRarity + afterRarity
 
 def get_subtypes_cols(data):
     subtypes_counts = {}
