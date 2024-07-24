@@ -11,6 +11,7 @@ INCLUDE_UNIQUES = True
 INCLUDE_KS = True
 FORCE_INCLUDE_KS_UNIQUES = True # only relevant if INCLUDE_KS = False and INCLUDE_UNIQUES = True
 INCLUDE_FOILERS = False
+SKIP_NOT_ALL_LANGUAGES = True
 
 # Imports
 import requests
@@ -141,6 +142,9 @@ def merge_cards_data(data: Dict[str, List[Dict[str, any]]]):
         for language in data:
             if card_id not in cards_lang_dict[language]:
                 print(f"Card {card_id} not found in {language}")
+                if SKIP_NOT_ALL_LANGUAGES:
+                    print("Skipping card")
+                    break
                 continue
             current_card_lang = cards_lang_dict[language][card_id]
             for property in ["id", "type", "subtypes", "assets", "mainFaction", "rarity"]:
@@ -163,7 +167,8 @@ def merge_cards_data(data: Dict[str, List[Dict[str, any]]]):
                     if property in ["PERMANENT", "RESERVE"]:
                         value = int(value) if value != "" else None
                     add_property_or_ensure_identical(card["elements"], property, value)
-        all_cards[card_id] = card
+        else: # Execute when the for loop is done, except if break
+            all_cards[card_id] = card
     return all_cards
 
 def add_property_or_ensure_identical(card, property_name, property_value):
