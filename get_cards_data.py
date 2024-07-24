@@ -58,7 +58,7 @@ def get_cards_data_faction(language, faction):
 
 def get_cards_data(language):
     data = []
-    for faction in ["AX", "BR", "LY", "MU", "OR", "YZ"]:
+    for faction in ["AX", "BR", "LY", "MU", "OR", "YZ", "NE"]:
         print(f"==== Faction {faction} ====")
         data += get_cards_data_faction(language, faction)
     return data
