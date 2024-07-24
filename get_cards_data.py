@@ -25,14 +25,44 @@ if not INCLUDE_UNIQUES:
     RARITY_PARAMS = "rarity[]=COMMON&rarity[]=RARE"
 CARDS_URL = f"https://api.altered.gg/cards?{RARITY_PARAMS}&itemsPerPage={ITEMS_PER_PAGE}"
 
-def get_cards_page(language, page):
-    response = requests.get(CARDS_URL + f"&page={page}", headers=LANGUAGE_HEADERS[language])
+def get_cards_page(language, page, faction=None):
+    url = CARDS_URL + f"&page={page}"
+    if faction is not None:
+        url += f"&factions[]={faction}"
+    response = requests.get(url, headers=LANGUAGE_HEADERS[language])
     if not response.ok:
         print(response)
         return None, None
     data = response.json()
     return data["hydra:member"], int(data["hydra:totalItems"])
 
+def get_cards_data_faction(language, faction):
+    print("  page 1")
+    data, page1_total = get_cards_page(language, 1, faction=faction)
+    if data is None:
+        return None
+    nb_pages = (page1_total - 1)//ITEMS_PER_PAGE + 1
+    for i in range(2, nb_pages+1):
+        print(f"  page {i}/{nb_pages}")
+        page_data, page_total = get_cards_page(language, i, faction=faction)
+        if page_total != page1_total:
+            print("Restarting because the total number of cards changed")
+            return get_cards_data_faction(language, faction)
+        data += page_data
+    
+    if len(data) != page1_total:
+        raise Exception(f"Error: total ({page1_total}) is different compared to number of cards ({len(data)})")
+    
+    return data
+
+def get_cards_data(language):
+    data = []
+    for faction in ["AX", "BR", "LY", "MU", "OR", "YZ"]:
+        print(f"==== Faction {faction} ====")
+        data += get_cards_data_faction(language, faction)
+    return data
+
+"""
 def get_cards_data(language):
     print("  page 1")
     data, page1_total = get_cards_page(language, 1)
@@ -51,6 +81,7 @@ def get_cards_data(language):
         raise Exception(f"Error: total ({page1_total}) is different compared to number of cards ({len(data)})")
     
     return data
+"""
 
 def treat_cards_data(data):
     cards = []

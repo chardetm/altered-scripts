@@ -31,7 +31,11 @@ def main():
     if DOWNLOAD_ASSETS:
         create_folder_if_not_exists(CARD_ASSETS_FOLDER)
     
+    nb_cards = len(data)
+    cid = 0
     for card in data.values():
+        cid += 1
+        print(f"{cid}/{nb_cards}")
         card_id = card["id"]
         i = 0
 
