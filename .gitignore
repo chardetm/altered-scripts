@@ -3,3 +3,6 @@ results
 temp
 card_images
 card_assets
+secret_token.txt
+private
+tts_*

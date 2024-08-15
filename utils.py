@@ -48,3 +48,7 @@ def dump_json(data, filename):
 def load_json(filename):
     with open(filename, encoding="utf8") as f:
         return json.load(f)
+
+def load_txt(filename):
+    with open(filename, encoding="utf8") as f:
+        return f.read()
