@@ -6,10 +6,10 @@ LANGUAGES = ["en", "fr", "es", "it", "de"]
 DUMP_TEMP_FILES = False
 OUTPUT_FOLDER = "results"
 TEMP_FOLDER = "temp"
-INCLUDE_PROMO_CARDS = True
-INCLUDE_UNIQUES = True
+INCLUDE_PROMO_CARDS = False
+INCLUDE_UNIQUES = False
 INCLUDE_KS = True
-FORCE_INCLUDE_KS_UNIQUES = True # only relevant if INCLUDE_KS = False and INCLUDE_UNIQUES = True
+FORCE_INCLUDE_KS_UNIQUES = False # only relevant if INCLUDE_KS = False and INCLUDE_UNIQUES = True
 INCLUDE_FOILERS = False
 SKIP_NOT_ALL_LANGUAGES = False
 COLLECTION_TOKEN=None
@@ -173,7 +173,10 @@ def merge_cards_data(data: Dict[str, List[Dict[str, any]]], skip_not_all_languag
                 if property not in card:
                     card[property] = {}
                 card[property][language] = current_card_lang[property]
-            add_property_or_ensure_identical(card, "collectorNumberPrinted", current_card_lang["collectorNumberFormatted"][:-3])
+            collector_number_printed: str = current_card_lang["collectorNumberFormatted"]
+            if collector_number_printed[-2:].isalpha():
+                collector_number_printed = collector_number_printed[:-3]
+            add_property_or_ensure_identical(card, "collectorNumberPrinted", collector_number_printed)
             if "elements" not in card:
                 card["elements"] = {}
             for property in current_card_lang["elements"]:
