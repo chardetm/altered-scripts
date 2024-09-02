@@ -107,8 +107,11 @@ def main():
     if GROUP_SUBTYPES:
         fieldnames.append("subtypes")
     else:
-        for i in range(max(subtypes_cols.values()) + 1):
-            fieldnames.append("subtype_" + str(i+1))
+        try:
+            for i in range(max(subtypes_cols.values()) + 1):
+                fieldnames.append("subtype_" + str(i+1))
+        except:
+            pass
     fieldnames += ["handCost", "reserveCost", "forestPower", "mountainPower", "waterPower", "landmarksSize", "reserveSize"]
     for language in ABILITIES_LANGUAGES:
         fieldnames += ["abilities_" + language, "supportAbility_" + language]

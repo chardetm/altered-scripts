@@ -21,7 +21,7 @@ from os.path import join
 from utils import dump_json, create_folder_if_not_exists, LANGUAGE_HEADERS
 
 # Constants
-ITEMS_PER_PAGE = 500
+ITEMS_PER_PAGE = 36
 
 def get_cards_page(language, page, faction=None, include_uniques=INCLUDE_UNIQUES, items_per_page=ITEMS_PER_PAGE, collection_token=None):
     rarity_params = "rarity[]=UNIQUE&rarity[]=COMMON&rarity[]=RARE"
@@ -112,9 +112,9 @@ def treat_cards_data(data, include_uniques, include_ks, include_promo_cards, inc
             "id": card["reference"],
             "name": card["name"],
             "type": card["cardType"]["reference"],
-            "subtypes": [subtype["reference"] for subtype in card["cardSubTypes"]],
+            "subtypes": [subtype["reference"] for subtype in card["cardSubTypes"]] if "cardSubTypes" in card else [],
             "imagePath": card["imagePath"],
-            "assets": card["assets"],
+            "assets": card["assets"] if "assets" in card else [],
             "mainFaction": card["mainFaction"]["reference"],
             "elements": card["elements"],
             "rarity": card["rarity"]["reference"],
@@ -126,8 +126,9 @@ def treat_cards_data(data, include_uniques, include_ks, include_promo_cards, inc
         cards.append(cdata)
 
         types[card["cardType"]["reference"]] = card["cardType"]["name"]
-        for subtype in card["cardSubTypes"]:
-            subtypes[subtype["reference"]] = subtype["name"]
+        if "cardSubTypes" in card:
+            for subtype in card["cardSubTypes"]:
+                subtypes[subtype["reference"]] = subtype["name"]
         factions[card["mainFaction"]["reference"]] = card["mainFaction"]["name"]
         rarities[card["rarity"]["reference"]] = card["rarity"]["name"]
     return cards, types, subtypes, factions, rarities
