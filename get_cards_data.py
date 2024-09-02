@@ -2,8 +2,7 @@
 # MIT License
 
 # Parameters
-# LANGUAGES = ["en", "fr", "es", "it", "de"]
-LANGUAGES = ["en", "fr"]
+LANGUAGES = ["en", "fr", "es", "it", "de"]
 DUMP_TEMP_FILES = False
 OUTPUT_FOLDER = "results"
 TEMP_FOLDER = "temp"
