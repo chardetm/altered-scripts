@@ -2,8 +2,8 @@
 # MIT License
 
 # Parameters
-NAME_LANGUAGES = ["en", "fr"]
-ABILITIES_LANGUAGES = ["en", "fr"]
+NAME_LANGUAGES = ["en"]
+ABILITIES_LANGUAGES = ["en"]
 MAIN_LANGUAGE = "en"
 GROUP_SUBTYPES = False
 INCLUDE_WEB_ASSETS = False
@@ -48,7 +48,9 @@ def main():
     subtypes_cols = {}
     if not GROUP_SUBTYPES:
         subtypes_cols = get_subtypes_cols(data)
-    
+
+    fieldnames = ["collectorNumber"]
+
     for card in data.values():
         card_id = card["id"]
         card_dict = {
@@ -64,6 +66,25 @@ def main():
         else:
             for subtype in card["subtypes"]:
                 card_dict["subtype_" + str(subtypes_cols[subtype]+1)] = subtypes[subtype][MAIN_LANGUAGE]
+
+        # Include the collection stats if present in the cards data
+        if "foiled" in card:
+            card_dict["foiled"] = card["foiled"]
+            if "foiled" not in fieldnames:
+                fieldnames.append("foiled")
+        if "inMyTradelist" in card:
+            card_dict["inMyTradelist"] = card["inMyTradelist"]
+            if "inMyTradelist" not in fieldnames:
+                fieldnames.append("inMyTradelist")
+        if "inMyCollection" in card:
+            card_dict["inMyCollection"] = card["inMyCollection"]
+            if "inMyCollection" not in fieldnames:
+                fieldnames.append("inMyCollection")
+        if "inMyWantlist" in card:
+            card_dict["inMyWantlist"] = card["inMyWantlist"]
+            if "inMyWantlist" not in fieldnames:
+                fieldnames.append("inMyWantlist")
+
         if "elements" in card:
             if "MAIN_COST" in card["elements"]:
                 card_dict["handCost"] = card["elements"]["MAIN_COST"]
@@ -100,7 +121,6 @@ def main():
                     card_dict["webAsset2"] = card["assets"]["WEB"][2]
         cards_dicts.append(card_dict)
     
-    fieldnames = ["collectorNumber"]
     for language in NAME_LANGUAGES:
         fieldnames.append("name_" + language)
     fieldnames += ["faction", "rarity", "type"]

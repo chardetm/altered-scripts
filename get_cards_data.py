@@ -23,11 +23,11 @@ from utils import dump_json, create_folder_if_not_exists, LANGUAGE_HEADERS
 # Constants
 ITEMS_PER_PAGE = 36
 
-def get_cards_page(language, page, faction=None, include_uniques=INCLUDE_UNIQUES, items_per_page=ITEMS_PER_PAGE, collection_token=None):
+def get_page(apiEndpoint, language, page, faction=None, include_uniques=INCLUDE_UNIQUES, items_per_page=ITEMS_PER_PAGE, collection_token=None):
     rarity_params = "rarity[]=UNIQUE&rarity[]=COMMON&rarity[]=RARE"
     if not include_uniques:
         rarity_params = "rarity[]=COMMON&rarity[]=RARE"
-    url = f"https://api.altered.gg/cards?{rarity_params}&itemsPerPage={items_per_page}&page={page}"
+    url = f"https://api.altered.gg/{apiEndpoint}?{rarity_params}&itemsPerPage={items_per_page}&page={page}"
     headers = {}
     headers.update(LANGUAGE_HEADERS[language])
     if collection_token:
@@ -53,8 +53,10 @@ def get_cards_page(language, page, faction=None, include_uniques=INCLUDE_UNIQUES
         raise Exception("Request error." + (" Is your token up to date?" if collection_token else ""))
     data = response.json()
     cards = data["hydra:member"]
-    fix_api_errors(cards)
+    if apiEndpoint == "cards":
+        fix_api_errors(cards)
     return cards, int(data["hydra:totalItems"])
+
 
 def fix_api_errors(cards):
     for card in cards:
@@ -67,18 +69,18 @@ def fix_api_errors(cards):
         if id.startswith("ALT_COREKS_B_LY_10_"): # Ouroboros Inkcaster KS
             card["collectorNumberFormatted"] = cn.replace("BTG-065", "BTG-074")
 
-def get_cards_data_language_faction(language, faction, include_uniques=INCLUDE_UNIQUES, items_per_page=ITEMS_PER_PAGE, collection_token=None):
+def get_data_language_faction(apiEndpoint, language, faction, include_uniques=INCLUDE_UNIQUES, items_per_page=ITEMS_PER_PAGE, collection_token=None):
     print("  page 1")
-    data, page1_total = get_cards_page(language, 1, faction=faction, include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
+    data, page1_total = get_page(apiEndpoint, language, 1, faction=faction, include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
     if data is None:
         return None
     nb_pages = (page1_total - 1)//ITEMS_PER_PAGE + 1
     for i in range(2, nb_pages+1):
         print(f"  page {i}/{nb_pages}")
-        page_data, page_total = get_cards_page(language, i, faction=faction, include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
+        page_data, page_total = get_page(apiEndpoint, language, i, faction=faction, include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
         if page_total != page1_total:
             print("Restarting because the total number of cards changed")
-            return get_cards_data_language_faction(language, faction, collection_token=collection_token)
+            return get_data_language_faction(language, faction, collection_token=collection_token)
         data += page_data
     
     if len(data) != page1_total:
@@ -86,20 +88,20 @@ def get_cards_data_language_faction(language, faction, include_uniques=INCLUDE_U
     
     return data
 
-def get_cards_data_language(language, include_uniques=INCLUDE_UNIQUES, items_per_page=ITEMS_PER_PAGE, collection_token=None):
+def get_data_language(apiEndpoint, language, include_uniques=INCLUDE_UNIQUES, items_per_page=ITEMS_PER_PAGE, collection_token=None):
     data = []
     for faction in ["AX", "BR", "LY", "MU", "OR", "YZ", "NE"]:
         print(f"==== Faction {faction} ====")
-        data += get_cards_data_language_faction(language, faction, include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
+        data += get_data_language_faction(apiEndpoint, language, faction, include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
     return data
 
-def treat_cards_data(data, include_uniques, include_ks, include_promo_cards, include_foilers, force_include_ks_uniques):
+def treat_cards_data(cards_data, stats_data, include_uniques, include_ks, include_promo_cards, include_foilers, force_include_ks_uniques):
     cards = []
     types = {}
     subtypes = {}
     factions = {}
     rarities = {}
-    for card in data:
+    for card in cards_data:
         if not include_foilers and "_FOILER_" in card["reference"]:
             continue
         if not include_ks and "_COREKS_" in card["reference"]:
@@ -120,9 +122,11 @@ def treat_cards_data(data, include_uniques, include_ks, include_promo_cards, inc
             "rarity": card["rarity"]["reference"],
             "collectorNumberFormatted": card["collectorNumberFormatted"]
         }
-        for optional_property in ["inMyCollection", "inMyWantlist", "latestAddition", "inMyTradelist"]:
-            if optional_property in card:
-                cdata[optional_property] = card[optional_property]
+        for stats in stats_data:
+            if stats["reference"] == card["reference"]:
+                for optional_property in ["inMyCollection", "inMyWantlist", "foiled", "inMyTradelist"]:
+                    if optional_property in stats:
+                        cdata[optional_property] = stats[optional_property]
         cards.append(cdata)
 
         types[card["cardType"]["reference"]] = card["cardType"]["name"]
@@ -164,7 +168,7 @@ def merge_cards_data(data: Dict[str, List[Dict[str, any]]], skip_not_all_languag
             current_card_lang = cards_lang_dict[language][card_id]
             same_properties = ["id", "type", "subtypes", "assets", "mainFaction", "rarity"]
             if is_collection:
-                same_properties.extend(["latestAddition", "inMyTradelist", "inMyCollection", "inMyWantlist"])
+                same_properties.extend(["foiled", "inMyTradelist", "inMyCollection", "inMyWantlist"])
             for property in same_properties:
                 if property not in current_card_lang:
                     print(f"Property {property} not in card {current_card_lang['name']}")
@@ -224,13 +228,23 @@ def get_cards_data(
     treated_subtypes = {}
     treated_factions = {}
     treated_rarities = {}
-    for language in languages:
-        print("Importing data for language " + language)
-        raw_data = get_cards_data_language(language, include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
+
+    # Collection stats are not language specific, so only load them once, if there is a collection
+    raw_stats_data = []
+    if collection_token:
+        print("Importing stats data")
+        raw_stats_data = get_data_language("cards/stats", "en", include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
         if dump_temp_files:
-            dump_json(raw_data, join(temp_folder, 'raw_data_' + language + '.json'))
+            dump_json(raw_cards_data, join(temp_folder, 'raw_stats_data_' + language + '.json'))
+
+    for language in languages:
+        print("Importing card data for language " + language)
+        raw_cards_data = get_data_language("cards", language, include_uniques=include_uniques, items_per_page=items_per_page, collection_token=collection_token)
+        if dump_temp_files:
+            dump_json(raw_cards_data, join(temp_folder, 'raw_cards_data_' + language + '.json'))
         tcards, ttypes, tsubtypes, tfactions, trarities = treat_cards_data(
-            raw_data,
+            raw_cards_data,
+            raw_stats_data,
             include_uniques=include_uniques,
             include_ks=include_ks,
             include_promo_cards=include_promo_cards,
