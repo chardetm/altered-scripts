@@ -2,8 +2,8 @@
 # MIT License
 
 # Parameters
-NAME_LANGUAGES = ["en"]
-ABILITIES_LANGUAGES = ["en"]
+NAME_LANGUAGES = ["en", "fr"]
+ABILITIES_LANGUAGES = ["en", "fr"]
 MAIN_LANGUAGE = "en"
 GROUP_SUBTYPES = False
 INCLUDE_WEB_ASSETS = False
